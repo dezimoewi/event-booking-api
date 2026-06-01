@@ -11,12 +11,10 @@ async function seed() {
   try {
     await client.query('BEGIN');
 
-    // Drop tables in order (respect foreign keys)
     await client.query('DROP TABLE IF EXISTS bookings CASCADE');
     await client.query('DROP TABLE IF EXISTS events CASCADE');
     await client.query('DROP TABLE IF EXISTS users CASCADE');
 
-    // Create tables
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -53,10 +51,8 @@ async function seed() {
       )
     `);
 
-    // Hash passwords (10 salt rounds)
     const hashedPassword = await bcrypt.hash('password123', 10);
 
-    // Insert sample users
     await client.query(`
       INSERT INTO users (name, email, password) VALUES
       ($1, $2, $3),
@@ -68,7 +64,6 @@ async function seed() {
       'Charlie Brown', 'charlie@example.com', hashedPassword,
     ]);
 
-    // Insert sample events (future dates)
     await client.query(`
       INSERT INTO events (title, description, date, location, total_seats, available_seats, created_by) VALUES
       ('Tech Conference 2026', 'Annual technology conference', '2026-07-15 09:00:00', 'Convention Center, NYC', 500, 500, 1),

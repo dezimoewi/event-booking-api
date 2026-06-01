@@ -1,4 +1,3 @@
--- Users table
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -7,7 +6,6 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Events table
 CREATE TABLE IF NOT EXISTS events (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
@@ -21,7 +19,6 @@ CREATE TABLE IF NOT EXISTS events (
     CONSTRAINT seats_check CHECK (available_seats >= 0 AND available_seats <= total_seats)
 );
 
--- Bookings table
 CREATE TABLE IF NOT EXISTS bookings (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,

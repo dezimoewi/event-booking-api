@@ -12,13 +12,11 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-// Global security middleware
 app.use(helmet());
 app.use(express.json());
 
-// General rate limiter
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
@@ -26,20 +24,16 @@ const generalLimiter = rateLimit({
 });
 app.use(generalLimiter);
 
-// Swagger docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
 
-// Health check
 app.get('/', (req, res) => {
   res.json({ message: 'Event Booking API is running' });
 });
 
-// Centralized error handler
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;

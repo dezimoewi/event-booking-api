@@ -5,7 +5,6 @@ const bookEvent = async (eventId, userId, seats = 1) => {
   try {
     await client.query('BEGIN');
 
-    // Row-level lock to prevent race conditions
     const eventResult = await client.query(
       'SELECT id, available_seats, title FROM events WHERE id = $1 FOR UPDATE',
       [eventId]
@@ -29,7 +28,6 @@ const bookEvent = async (eventId, userId, seats = 1) => {
       throw error;
     }
 
-    // Check if user already has a booking for this event
     const existingBooking = await client.query(
       'SELECT id FROM bookings WHERE user_id = $1 AND event_id = $2',
       [userId, eventId]
@@ -42,13 +40,11 @@ const bookEvent = async (eventId, userId, seats = 1) => {
       throw error;
     }
 
-    // Deduct available seats
     await client.query(
       'UPDATE events SET available_seats = available_seats - $1 WHERE id = $2',
       [seats, eventId]
     );
 
-    // Insert booking
     const bookingResult = await client.query(
       'INSERT INTO bookings (user_id, event_id, seats_booked) VALUES ($1, $2, $3) RETURNING *',
       [userId, eventId, seats]
@@ -87,7 +83,6 @@ const cancelBooking = async (bookingId, userId) => {
   try {
     await client.query('BEGIN');
 
-    // Find the booking and verify ownership
     const bookingResult = await client.query(
       'SELECT * FROM bookings WHERE id = $1 AND user_id = $2',
       [bookingId, userId]
@@ -102,7 +97,6 @@ const cancelBooking = async (bookingId, userId) => {
 
     const booking = bookingResult.rows[0];
 
-    // Return seats to event (lock the event row)
     await client.query(
       'SELECT id FROM events WHERE id = $1 FOR UPDATE',
       [booking.event_id]
@@ -113,7 +107,6 @@ const cancelBooking = async (bookingId, userId) => {
       [booking.seats_booked, booking.event_id]
     );
 
-    // Delete the booking
     await client.query('DELETE FROM bookings WHERE id = $1', [bookingId]);
 
     await client.query('COMMIT');

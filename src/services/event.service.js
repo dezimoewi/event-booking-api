@@ -25,7 +25,6 @@ const getAllEvents = async ({ limit, offset, start_date, end_date }) => {
 
   const result = await pool.query(query, params);
 
-  // Get total count for pagination metadata
   let countQuery = 'SELECT COUNT(*) FROM events';
   const countParams = [];
   if (start_date && end_date) {
@@ -65,7 +64,6 @@ const getEventById = async (id) => {
 };
 
 const createEvent = async ({ title, description, date, location, total_seats }, userId) => {
-  // Verify date is in the future
   if (new Date(date) <= new Date()) {
     const error = new Error('Event date must be in the future.');
     error.statusCode = 400;
@@ -83,7 +81,6 @@ const createEvent = async ({ title, description, date, location, total_seats }, 
 };
 
 const updateEvent = async (id, updates, userId) => {
-  // Check event exists and belongs to user
   const eventResult = await pool.query('SELECT * FROM events WHERE id = $1', [id]);
   if (eventResult.rows.length === 0) {
     const error = new Error('Event not found.');
@@ -98,7 +95,6 @@ const updateEvent = async (id, updates, userId) => {
     throw error;
   }
 
-  // If updating total_seats, ensure it's not less than already booked
   if (updates.total_seats) {
     const bookedResult = await pool.query(
       'SELECT COALESCE(SUM(seats_booked), 0) as total_booked FROM bookings WHERE event_id = $1',
@@ -112,18 +108,15 @@ const updateEvent = async (id, updates, userId) => {
       throw error;
     }
 
-    // Recalculate available_seats
     updates.available_seats = updates.total_seats - totalBooked;
   }
 
-  // If updating date, ensure it's in the future
   if (updates.date && new Date(updates.date) <= new Date()) {
     const error = new Error('Event date must be in the future.');
     error.statusCode = 400;
     throw error;
   }
 
-  // Build dynamic update query
   const fields = [];
   const params = [];
   let paramIndex = 1;
