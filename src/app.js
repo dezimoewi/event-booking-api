@@ -37,14 +37,9 @@ app.get('/', (req, res) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
-
-// Important for tests: don't start listening when imported by Jest/Supertest
-if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`API Docs available at http://localhost:${PORT}/api-docs`);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`API Docs available at http://localhost:${PORT}/api-docs`);
+});
 
 module.exports = app;
-
